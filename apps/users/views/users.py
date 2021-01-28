@@ -9,6 +9,7 @@ from rest_framework import status
 from apps.users.serializers import (
     UserModelSerializer,
     UserLoginSerializer,
+    UserSignupSerializer
 )
 
 
@@ -27,3 +28,21 @@ class UserLoginAPIView(APIView):
         }  
 
         return Response(data, status=status.HTTP_200_OK)
+
+class UserSignupAPIView(APIView):
+    """Users sign up API view."""
+
+    def post(self, request, *args, **kwargs):
+        """Handle http post request."""
+
+        serializer = UserSignupSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        data = {
+            'user': UserModelSerializer(user).data
+        }
+
+        return Response(data, status=status.HTTP_201_CREATED)
+    
+

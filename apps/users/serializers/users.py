@@ -3,9 +3,11 @@
 # Rest framework
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
+from rest_framework.validators import UniqueValidator
 
 # Django
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, password_validation
+from django.core.validators import RegexValidator
 
 # Models
 from apps.users.models import User
@@ -23,6 +25,51 @@ class UserModelSerializer(serializers.ModelSerializer):
             'email',
             'phone_number'
         )
+
+
+class UserSignupSerializer(serializers.Serializer):
+    """Users sign up serializer. Handle users creation."""
+
+    email = serializers.EmailField(
+        validators=[UniqueValidator(queryset=User.objects.all()
+    )])
+
+    username = serializers.CharField(
+        min_length=4,
+        max_length=50,
+        validators = [UniqueValidator(queryset=User.objects.all())]
+    )
+
+    password = serializers.CharField(min_length=8)
+    password_confirmation = serializers.CharField(min_length=8)
+
+    phone_regex = RegexValidator(
+        regex=r'\+?1?\d{9,15}$',
+        message="Phone number must be entered in the format: +999999999. Up to 15 digits allowed."
+    )
+
+    phone_number = serializers.CharField(validators=[phone_regex])
+
+    first_name = serializers.CharField(min_length=3, max_length=40)
+    last_name = serializers.CharField(min_length=3, max_length=40)
+
+    def validate(self, data):
+        """Verify that passwords match."""
+
+        passwd = data['password']
+        passwd_conf = data['password_confirmation']
+
+        if passwd != passwd_conf:
+            raise serializers.ValidationError('Passowords do not match')
+    
+        password_validation.validate_password(passwd)
+        return data
+
+    def create(self, validated_data):
+        """Create user with the requesting data."""
+        validated_data.pop('password_confirmation')
+        user = User.objects.create(**validated_data, is_verified=False, is_client=True)
+        return user
 
 
 

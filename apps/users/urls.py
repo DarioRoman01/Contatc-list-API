@@ -11,5 +11,11 @@ urlpatterns = [
         route='users/login/',
         view=views.UserLoginAPIView.as_view(),
         name='login'
+    ),
+
+    path(
+        route='users/signup/',
+        view=views.UserSignupAPIView.as_view(),
+        name='signup'
     )
 ]
