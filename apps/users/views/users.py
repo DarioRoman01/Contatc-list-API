@@ -27,7 +27,7 @@ class UserLoginAPIView(APIView):
             'access_token': token
         }  
 
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_201_CREATED)
 
 class UserSignupAPIView(APIView):
     """Users sign up API view."""
@@ -39,10 +39,12 @@ class UserSignupAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        data = {
-            'user': UserModelSerializer(user).data
-        }
+        data = UserModelSerializer(user).data
 
         return Response(data, status=status.HTTP_201_CREATED)
     
+
+class UserVerificationAPIView(APIView):
+    """User verification API view."""
+    pass
 

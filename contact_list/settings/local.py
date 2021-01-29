@@ -5,6 +5,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025
+
+
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 

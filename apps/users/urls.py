@@ -14,6 +14,12 @@ urlpatterns = [
     ),
 
     path(
+        route='users/verify',
+        view=views.UserVerificationAPIView.as_view(),
+        name='verify'
+    ),
+
+    path(
         route='users/signup/',
         view=views.UserSignupAPIView.as_view(),
         name='signup'

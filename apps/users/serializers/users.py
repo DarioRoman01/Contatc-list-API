@@ -5,12 +5,22 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.validators import UniqueValidator
 
+# JWT
+import jwt
+
 # Django
 from django.contrib.auth import authenticate, password_validation
 from django.core.validators import RegexValidator
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils import timezone
+from django.conf import settings
 
 # Models
 from apps.users.models import User
+
+# Utilities
+from datetime import timedelta
 
 class UserModelSerializer(serializers.ModelSerializer):
     """User model serializer."""
@@ -68,9 +78,36 @@ class UserSignupSerializer(serializers.Serializer):
     def create(self, validated_data):
         """Create user with the requesting data."""
         validated_data.pop('password_confirmation')
-        user = User.objects.create(**validated_data, is_verified=False, is_client=True)
+        user = User.objects.create_user(**validated_data, is_verified=False, is_client=True)
+        self.send_confirmation_email(user)
         return user
 
+    def send_confirmation_email(self, user):
+        """Send account verification link to given user."""
+        verification_token = self.gen_verication_token(user)
+        
+        subject = 'Welcome @{}! Verify your account to start using the app'.format(user.username)
+        from_email = 'Contact List <noreply@contactlist.com>'
+        text_content = render_to_string(
+            'emails/users/account_verifiaction.html',
+            {'token' : verification_token, 'user': user}
+        )
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
+        msg.attach_alternative(text_content, "text/html")
+        msg.send()
+
+    def gen_verication_token(self, user):
+        """Create JWT token that the user can use to verify its account."""
+        exp_date = timezone.now() + timedelta(days=2)
+
+        paylaod = {
+            'user': user.username,
+            'exp': int(exp_date.timestamp()),
+            'type': 'email_confirmation'
+        }
+        token = jwt.encode(paylaod, settings.SECRET_KEY, algorithm='HS256')
+        
+        return token
 
 
 class UserLoginSerializer(serializers.Serializer):
@@ -86,6 +123,9 @@ class UserLoginSerializer(serializers.Serializer):
         if not user:
             raise serializers.ValidationError('Invalid credentials')
         
+        if not user.is_verified:
+            raise serializers.ValidationError('Your account is not active yet :(')
+
         self.context['user'] = user
         return data
 
@@ -95,6 +135,11 @@ class UserLoginSerializer(serializers.Serializer):
         token, created = Token.objects.get_or_create(user=self.context['user'])
 
         return self.context['user'], token.key
+
+
+class UserVerificationSerializer(serializers.Serializer):
+    """Users verification serializer."""
+    pass
 
 
 
