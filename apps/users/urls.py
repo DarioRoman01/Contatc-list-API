@@ -14,7 +14,7 @@ urlpatterns = [
     ),
 
     path(
-        route='users/verify',
+        route='users/verify/',
         view=views.UserVerificationAPIView.as_view(),
         name='verify'
     ),

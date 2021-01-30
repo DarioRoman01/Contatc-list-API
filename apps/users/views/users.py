@@ -9,7 +9,8 @@ from rest_framework import status
 from apps.users.serializers import (
     UserModelSerializer,
     UserLoginSerializer,
-    UserSignupSerializer
+    UserSignupSerializer,
+    UserVerificationSerializer
 )
 
 
@@ -46,5 +47,14 @@ class UserSignupAPIView(APIView):
 
 class UserVerificationAPIView(APIView):
     """User verification API view."""
-    pass
+    
+    def post(self, request, *args, **kwargs):
+        """Handle http post request."""
+
+        serializer = UserVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        data = {'message': 'Your account has been verified successfuly uwu'}
+        return Response(data, status=status.HTTP_200_OK)
 
