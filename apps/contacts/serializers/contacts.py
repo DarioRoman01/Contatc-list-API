@@ -47,5 +47,6 @@ class CreateContactSerializer(serializers.Serializer):
 
 
     def create(self, validated_data):
+        """handle contact creation."""
         contact = Contact.objects.create(**validated_data)
         return contact
