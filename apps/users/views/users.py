@@ -40,18 +40,12 @@ class UsersViewSet(mixins.RetrieveModelMixin,
         """Assign permissions based on action."""
         if self.action in ['signup', 'login', 'verify']:
             permissions = [AllowAny]
-        elif self.action in ['retrieve', 'update', 'partial_update']:
+        elif self.action in ['update', 'partial_update']:
             permissions = [IsAuthenticated, IsAccountOwner]
         else:
             permissions = [IsAuthenticated]
         return [p() for p in permissions]
 
-    def get_object(self):
-        """return specific user."""
-        return get_object_or_404(
-            User,
-            username=self.kwargs['username']
-        )
 
     @action(detail=False, methods=['POST'])
     def login(self, request):
