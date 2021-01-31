@@ -1,9 +1,12 @@
 # .Blog
-This project 
+This project was made to learn how to create a API with django rest framework
+understanding how it is the work flow in django rest framework and how it works
+the serializers, viewsets, APIviews and routers. 
 
 ## Dependencies
 Python 3
 Django
+django-rest-framework
 
 ## Usage
 ```shell
